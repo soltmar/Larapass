@@ -54,7 +54,7 @@ class LarapassServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/larapass.php', 'larapass');
 
-        $this->app->alias(Authenticatable::class, WebAuthnAuthenticatable::class);
+        // $this->app->alias(Authenticatable::class, WebAuthnAuthenticatable::class);
 
         $this->bindWebAuthnBasePackage();
 
@@ -193,12 +193,14 @@ class LarapassServiceProvider extends ServiceProvider
             AuthenticatorSelectionCriteria::class,
             static function ($app) {
                 $config = $app['config'];
+                $userless = $config->get('larapass.userless');
 
                 $selection = new WebAuthn\AuthenticatorSelectionCriteria(
-                    $config->get('larapass.attachment')
+                    authenticatorAttachment: $config->get('larapass.attachment'),
+                    userVerification: $userless
                 );
 
-                if ($userless = $config->get('larapass.userless')) {
+                if (!empty($userless) && $userless != 'discouraged') {
                     $selection->setResidentKey($userless);
                 }
 
