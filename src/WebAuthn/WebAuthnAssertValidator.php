@@ -132,9 +132,9 @@ class WebAuthnAssertValidator
      */
     protected function shouldVerifyLogin(ConfigContract $config): string
     {
-        if (in_array($config->get('larapass.userless'), ['required', 'preferred'])) {
-            return 'required';
-        }
+        // if (in_array($config->get('larapass.userless'), ['required', 'preferred'])) {
+        //     return 'required';
+        // }
 
         return $config->get('larapass.login_verify');
     }
