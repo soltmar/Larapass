@@ -193,12 +193,11 @@ class LarapassServiceProvider extends ServiceProvider
             AuthenticatorSelectionCriteria::class,
             static function ($app) {
                 $config = $app['config'];
-                $userless = $config->get('larapass.login_verify');
-
-                $selection = new WebAuthn\AuthenticatorSelectionCriteria(
-                    authenticatorAttachment: $config->get('larapass.attachment'),
-                    userVerification: $userless
-                );
+                $selection = new WebAuthn\AuthenticatorSelectionCriteria();
+                $selection
+                    ->setAuthenticatorAttachment($config->get('larapass.attachment'))
+                    ->setUserVerification($config->get('larapass.login_verify'))
+                ;
 
                 $selection->setResidentKey($config->get('larapass.userless'));
 
