@@ -129,19 +129,6 @@ class LarapassServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
-            CoseAlgorithmManager::class,
-            static function ($app) {
-                $manager = new CoseAlgorithmManager();
-
-                foreach ($app['config']->get('larapass.algorithms') as $algorithm) {
-                    $manager->add(new $algorithm());
-                }
-
-                return $manager;
-            }
-        );
-
-        $this->app->bind(
             AuthenticatorAttestationResponseValidator::class,
             static function ($app) {
                 return new AuthenticatorAttestationResponseValidator(

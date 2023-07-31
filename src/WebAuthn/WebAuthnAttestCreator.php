@@ -155,17 +155,17 @@ class WebAuthnAttestCreator
      */
     protected function makeAttestationRequest($user): PublicKeyCredentialCreationOptions
     {
-        return new PublicKeyCredentialCreationOptions(
+        return PublicKeyCredentialCreationOptions::create(
             $this->relyingParty,
             $user->userEntity(),
             random_bytes($this->bytes),
             $this->parameters->all(),
-            $this->timeout,
-            $this->getExcludedCredentials($user),
-            $this->criteria,
-            $this->conveyance,
-            $this->extensions
-        );
+        )
+            ->excludeCredentials(...$this->getExcludedCredentials($user))
+            ->setAuthenticatorSelection($this->criteria)
+            ->setAttestation($this->conveyance)
+            ->setExtensions($this->extensions)
+            ->setTimeout($this->timeout);
     }
 
     /**
