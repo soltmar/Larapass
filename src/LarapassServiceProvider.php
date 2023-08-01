@@ -21,6 +21,7 @@ use RuntimeException;
 use Webauthn\AttestationStatement\AttestationObjectLoader;
 use Webauthn\AttestationStatement\AttestationStatementSupportManager;
 use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
+use Webauthn\AttestationStatement\PackedAttestationStatementSupport;
 use Webauthn\AuthenticationExtensions\AuthenticationExtensionsClientInputs;
 use Webauthn\AuthenticationExtensions\ExtensionOutputCheckerHandler;
 use Webauthn\AuthenticatorAssertionResponseValidator;
@@ -89,21 +90,19 @@ class LarapassServiceProvider extends ServiceProvider
         $this->app->singleton(
             AttestationObjectLoader::class,
             static function ($app) {
-                return new AttestationObjectLoader(
-                    $app[AttestationStatementSupportManager::class],
-                    $app[MetadataStatementRepository::class],
-                    $app[LoggerInterface::class]
-                );
+                $attObjectLoader = AttestationObjectLoader::create($app[AttestationStatementSupportManager::class]);
+                $attObjectLoader->setLogger($app[LoggerInterface::class]);
+
+                return $attObjectLoader;
             }
         );
 
         $this->app->singleton(
             PublicKeyCredentialLoader::class,
             static function ($app) {
-                return new PublicKeyCredentialLoader(
-                    $app[AttestationObjectLoader::class],
-                    $app['log']
-                );
+                $keyLoader = PublicKeyCredentialLoader::create($app[AttestationObjectLoader::class]);
+                $keyLoader->setLogger($app['log']);
+                return $keyLoader;
             }
         );
 
@@ -111,13 +110,6 @@ class LarapassServiceProvider extends ServiceProvider
             PublicKeyCredentialSourceRepository::class,
             static function () {
                 return new WebAuthnAuthenticationModel();
-            }
-        );
-
-        $this->app->bind(
-            TokenBindingHandler::class,
-            static function () {
-                return new IgnoreTokenBindingHandler();
             }
         );
 
@@ -131,14 +123,15 @@ class LarapassServiceProvider extends ServiceProvider
         $this->app->bind(
             AuthenticatorAttestationResponseValidator::class,
             static function ($app) {
-                return new AuthenticatorAttestationResponseValidator(
+                $attestRespValidator = AuthenticatorAttestationResponseValidator::create(
                     $app[AttestationStatementSupportManager::class],
                     $app[PublicKeyCredentialSourceRepository::class],
-                    $app[TokenBindingHandler::class],
+                    null,
                     $app[ExtensionOutputCheckerHandler::class],
-                    $app[MetadataStatementRepository::class],
-                    $app['log']
+                    $app[MetadataStatementRepository::class]
                 );
+                $attestRespValidator->setLogger($app['log']);
+                return $attestRespValidator;
             }
         );
 
@@ -152,14 +145,16 @@ class LarapassServiceProvider extends ServiceProvider
         $this->app->bind(
             AuthenticatorAssertionResponseValidator::class,
             static function ($app) {
-                return new AuthenticatorAssertionResponseValidator(
+                $assertRespValidator = AuthenticatorAssertionResponseValidator::create(
                     $app[PublicKeyCredentialSourceRepository::class],
-                    $app[TokenBindingHandler::class],
+                    null,
                     $app[ExtensionOutputCheckerHandler::class],
                     $app[CoseAlgorithmManager::class],
-                    $app[CounterChecker::class],
-                    $app['log']
+                    $app[CounterChecker::class]
                 );
+
+                $assertRespValidator->setLogger($app['log']);
+                return $assertRespValidator;
             }
         );
 
