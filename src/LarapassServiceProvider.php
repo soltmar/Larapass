@@ -76,7 +76,7 @@ class LarapassServiceProvider extends ServiceProvider
         $this->app->singleton(
             AttestationStatementSupportManager::class,
             static function () {
-                return tap(new AttestationStatementSupportManager())->add(new NoneAttestationStatementSupport());
+                return tap(new AttestationStatementSupportManager())->add(NoneAttestationStatementSupport::create());
             }
         );
 
@@ -121,6 +121,19 @@ class LarapassServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            CoseAlgorithmManager::class,
+            static function ($app) {
+                $manager = new CoseAlgorithmManager();
+
+                foreach ($app['config']->get('larapass.algorithms') as $algorithm) {
+                    $manager->add($algorithm::create());
+                }
+
+                return $manager;
+            }
+        );
+
+        $this->app->bind(
             AuthenticatorAttestationResponseValidator::class,
             static function ($app) {
                 $attestRespValidator = AuthenticatorAttestationResponseValidator::create(
@@ -149,11 +162,11 @@ class LarapassServiceProvider extends ServiceProvider
                     $app[PublicKeyCredentialSourceRepository::class],
                     null,
                     $app[ExtensionOutputCheckerHandler::class],
-                    $app[CoseAlgorithmManager::class],
-                    $app[CounterChecker::class]
+                    $app[CoseAlgorithmManager::class]
                 );
 
                 $assertRespValidator->setLogger($app['log']);
+                $assertRespValidator->setCounterChecker($app[CounterChecker::class]);
                 return $assertRespValidator;
             }
         );

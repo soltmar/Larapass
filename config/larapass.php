@@ -50,10 +50,11 @@ return [
     */
 
     'algorithms' => [
-        Algorithms::COSE_ALGORITHM_ES256,
-        Algorithms::COSE_ALGORITHM_ES384,
-        Algorithms::COSE_ALGORITHM_ES512,
-        Algorithms::COSE_ALGORITHM_RS256,
+        \Cose\Algorithm\Signature\ECDSA\ES256::class,   // ECDSA with SHA-256
+        \Cose\Algorithm\Signature\EdDSA\Ed25519::class, // EdDSA
+        \Cose\Algorithm\Signature\ECDSA\ES384::class,   // ECDSA with SHA-384
+        \Cose\Algorithm\Signature\ECDSA\ES512::class,   // ECDSA with SHA-512
+        \Cose\Algorithm\Signature\RSA\RS256::class,     // RSASSA-PKCS1-v1_5 with SHA-256
     ],
 
     /*
