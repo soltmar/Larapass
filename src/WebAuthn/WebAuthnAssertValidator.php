@@ -174,14 +174,13 @@ class WebAuthnAssertValidator
      */
     protected function makeAssertionRequest($user = null): RequestOptions
     {
-        return new RequestOptions(
-            random_bytes($this->bytes),
-            $this->timeout,
-            $this->relyingParty->getId(),
-            $user ? $user->allCredentialDescriptors() : [],
-            $this->verifyLogin,
-            $this->extensions
-        );
+        $credentials = $user ? $user->allCredentialDescriptors() : [];
+        return tap(new RequestOptions(random_bytes($this->bytes)))
+            ->setTimeout($this->timeout)
+            ->setRpId($this->relyingParty->getId())
+            ->allowCredentials(...$credentials)
+            ->setExtensions($this->extensions)
+            ->setUserVerification($this->verifyLogin);
     }
 
     /**
